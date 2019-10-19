@@ -6,12 +6,16 @@
 #include <string>
 #include <cmath>
 #include <sstream>
+#include <vector>
+#include <iwlib.h>
 
 namespace App {
     class AccessPoint {
     public:
-        AccessPoint(char* name, const u_int8_t* macAddress, double signalLevelDb, double signalFrequencyMHz);
+        explicit AccessPoint(iwrange* range, wireless_scan* accessPoint);
         ~AccessPoint();
+
+        static std::vector<App::AccessPoint*> ScanForAccessPoints(const std::string& interface);
 
         /** GETTERS **/
         std::string getName();
@@ -29,10 +33,23 @@ namespace App {
     private:
         std::string name;
         u_int8_t macAddress[MAC_LENGTH];
+        int channel;
+        int mode;
+        int security;
+        int privacy;
+        int cipher;
+        double frequency;
+        int quality;
+        double signal;
+        int bandwidth;
+        double minSignal;
+        double maxSignal;
+        long int firstSeen;
+        long int lastSeen;
+        int vendor;
+        int protocol;
 
-        double signalLevelDb;
-        double signalFrequencyMHz;
-        double distanceMeters;
+        double distance;
     };
 }
 

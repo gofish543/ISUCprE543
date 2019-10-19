@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 project(ISUCprE543)
 
-set(CMAKE_CXX_STANDARD_LIBRARIES "-ltins -lmnl")
+add_executable(ISUCprE543 main.cpp AccessPoint.cpp AccessPoint.h)
 
-set(CMAKE_CXX_STANDARD 11)
-
-add_executable(ISUCprE543 wifi_scan.c main.cpp AccessPoint.cpp AccessPoint.h)
+target_link_libraries(ISUCprE543 iw)
+target_link_libraries(ISUCprE543 m)
