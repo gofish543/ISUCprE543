@@ -8,6 +8,11 @@ AccessPoint::AccessPoint(iwrange* range, wireless_scan* accessPoint) : macAddres
 
     this->channel = iw_freq_to_channel(accessPoint->b.freq, range);
     this->mode = accessPoint->b.mode;
+    this->frequency = accessPoint->b.freq;
+    this->quality = accessPoint->stats.qual.qual;
+    this->noise = accessPoint->stats.qual.noise;
+    this->signalLevel = accessPoint->stats.qual.level;
+    this->protocol = accessPoint->b.name;
 
 //    this->security = accessPoint->
 
@@ -81,4 +86,8 @@ std::string AccessPoint::getMacAddressString() {
     );
 
     return std::string(buffer);
+}
+
+int AccessPoint::getMode(){
+    return this->mode;
 }

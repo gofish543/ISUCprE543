@@ -21,6 +21,7 @@ namespace App {
         std::string getName();
         u_int8_t* getMacAddress();
         std::string getMacAddressString();
+        int getMode();
         double getSignalLevel();
         double getSignalFrequency();
         double getDistance();
@@ -36,18 +37,16 @@ namespace App {
         int channel;
         int mode;
         int security;
-        int privacy;
-        int cipher;
         double frequency;
         int quality;
-        double signal;
+        int noise;
+        //signalLevel in dBm
+        int signalLevel;
         int bandwidth;
-        double minSignal;
-        double maxSignal;
         long int firstSeen;
         long int lastSeen;
         int vendor;
-        int protocol;
+        std::string protocol;
 
         double distance;
     };
