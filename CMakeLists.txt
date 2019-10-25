@@ -1,7 +1,15 @@
 cmake_minimum_required(VERSION 3.14)
 project(ISUCprE543)
 
-add_executable(ISUCprE543 main.cpp AccessPoint.cpp AccessPoint.h)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GTK2 REQUIRED gtk+-2.0)
 
-target_link_libraries(ISUCprE543 iw)
-target_link_libraries(ISUCprE543 m)
+include_directories(${GTK2_INCLUDE_DIRS})
+link_directories(${GTK2_LIBRARY_DIRS})
+
+add_executable(ISUCprE543 main.cpp AccessPoint.cpp AccessPoint.h helpers.cpp helpers.h)
+
+add_definitions(${GTK2_CFLAGS_OTHER})
+target_link_libraries(ISUCprE543 ${GTK2_LIBRARIES})
+target_link_libraries(ISUCprE543 nm)
+target_link_libraries(ISUCprE543 ncurses)

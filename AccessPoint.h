@@ -3,53 +3,64 @@
 
 #define MAC_LENGTH 6
 
-#include <string>
-#include <cmath>
-#include <sstream>
+#include <cstdio>
+#include <cstdlib>
+#include <iostream>
 #include <vector>
-#include <iwlib.h>
+
+#include <glib.h>
+#include <gmodule.h>
+
+#include <libnm/NetworkManager.h>
+#include <libnm/nm-client.h>
+#include <libnm/nm-device-wifi.h>
+#include <libnm/nm-utils.h>
+
+#include "helpers.h"
 
 namespace App {
     class AccessPoint {
     public:
-        explicit AccessPoint(iwrange* range, wireless_scan* accessPoint);
+        explicit AccessPoint(NMAccessPoint* accessPoint);
         ~AccessPoint();
 
-        static std::vector<App::AccessPoint*> ScanForAccessPoints(const std::string& interface);
+        static std::vector<App::AccessPoint*> ScanForAccessPoints(const char* interface);
+        static void PrintTable(const std::vector<App::AccessPoint*>& accessPoints, App::AccessPoint* selected);
+        static bool Compare(const App::AccessPoint* a, const App::AccessPoint* b);
 
-        /** GETTERS **/
-        std::string getName();
-        u_int8_t* getMacAddress();
-        std::string getMacAddressString();
-        double getSignalLevel();
-        double getSignalFrequency();
-        double getDistance();
-        /** GETTERS **/
+        void listenForTraffic();
+
+        std::string ssidString;
+        std::string bssidString;
+        std::string flagString;
+        std::string rsnFlagsString;
+        std::string wpaFlagsString;
+        std::string securityString;
+        std::string modeString;
+        std::string frequencyString;
+        std::string channelString;
+        std::string strengthString;
+        std::string bitrateString;
+        std::string distanceString;
 
     protected:
 
-        double calculateDistance();
-
     private:
-        std::string name;
-        u_int8_t macAddress[MAC_LENGTH];
-        int channel;
-        int mode;
-        int security;
-        int privacy;
-        int cipher;
-        double frequency;
-        int quality;
-        double signal;
-        int bandwidth;
-        double minSignal;
-        double maxSignal;
-        long int firstSeen;
-        long int lastSeen;
-        int vendor;
-        int protocol;
+        const GByteArray* ssid;
+        const char* bssid;
 
-        double distance;
+        NM80211ApFlags flags;
+        NM80211ApSecurityFlags rsnFlags;
+        NM80211ApSecurityFlags wpaFlags;
+        NM80211Mode mode;
+
+        guint32 frequency;
+        guint32 channel;
+        gint8 strength;
+        guint32 bitrate;
+        gdouble distance;
+
+        const char* path;
     };
 }
 
