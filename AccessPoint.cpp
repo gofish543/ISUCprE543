@@ -157,7 +157,3 @@ bool AccessPoint::Compare(const App::AccessPoint* a, const App::AccessPoint* b) 
 
 //double AccessPoint::CalculateDistance() {}() {
 //    double exponent = (27.55 - (20 * std::log10(this->signalFrequencyMHz)) + std::abs(this->signalLevelDb)) / 20.0;
-
-//    return std::pow(10.0, exponent);
-//    return 0;
-//}
