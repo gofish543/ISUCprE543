@@ -213,7 +213,7 @@ void AccessPoint::listenForTraffic() {
 //                goto close;
 //            }
 
-            pcap_loop(handle, 1000, AccessPoint::ProcessPacket, nullptr);
+            pcap_loop(handle, 10000, AccessPoint::ProcessPacket, nullptr);
 
         close:
             pcap_close(handle);
@@ -258,16 +258,16 @@ void AccessPoint::ProcessPacket(u_char* args, const struct pcap_pkthdr* header, 
 
     switch (type) {
         case 0:
-            management[subtype](packet);
+            management[subtype](packet, packet[2] + packet, packet, header->len);
             break;
         case 1:
-            control[subtype](packet);
+            control[subtype](packet, packet[2] + packet, packet, header->len);
             break;
         case 2:
-            data[subtype](packet);
+            data[subtype](packet, packet[2] + packet, packet, header->len);
             break;
         case 3:
-            extension[subtype](packet);
+            extension[subtype](packet, packet[2] + packet, packet, header->len);
             break;
         default:
             fprintf(stderr, "Unknown packet type %u\n", type);

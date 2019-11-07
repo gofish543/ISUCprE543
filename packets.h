@@ -2,64 +2,67 @@
 #define PACKETS_H
 
 #include <cstdio>
+#include <cctype>
 #include <sys/types.h>
+#include <netinet/in.h>
+#include <pcap/bpf.h>
 
-typedef void (* print_packet)(const u_char* packet);
+typedef void (* print_packet)(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
 
-void reserved(const u_char* packet);
+void reserved(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
 
-/* 0000 */ void management_association_request(const u_char* packet);
-/* 0001 */ void management_association_response(const u_char* packet);
-/* 0010 */ void management_reassociation_request(const u_char* packet);
-/* 0011 */ void management_reassociation_response(const u_char* packet);
-/* 0100 */ void management_probe_request(const u_char* packet);
-/* 0101 */ void management_probe_response(const u_char* packet);
-/* 0110 */ void management_timing_advertisement(const u_char* packet);
+/* 0000 */ void management_association_request(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0001 */ void management_association_response(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0010 */ void management_reassociation_request(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0011 */ void management_reassociation_response(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0100 */ void management_probe_request(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0101 */ void management_probe_response(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0110 */ void management_timing_advertisement(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
 /* 0111 */ // reserved
-/* 1000 */ void management_beacon(const u_char* packet);
-/* 1001 */ void management_atim(const u_char* packet);
-/* 1010 */ void management_disassociation(const u_char* packet);
-/* 1011 */ void management_authentication(const u_char* packet);
-/* 1100 */ void management_deauthentication(const u_char* packet);
-/* 1101 */ void management_action(const u_char* packet);
-/* 1110 */ void management_nack(const u_char* packet);
+/* 1000 */ void management_beacon(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1001 */ void management_atim(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1010 */ void management_disassociation(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1011 */ void management_authentication(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1100 */ void management_deauthentication(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1101 */ void management_action(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1110 */ void management_nack(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
 /* 1111 */ // reserved
 
 /* 0000 */ // reserved
 /* 0001 */ // reserved
-/* 0010 */ void control_trigger(const u_char* packet);
+/* 0010 */ void control_trigger(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
 /* 0011 */ // reserved
-/* 0100 */ void control_beamforming(const u_char* packet);
-/* 0101 */ void control_vht_he_ndp(const u_char* packet);
-/* 0110 */ void control_frame_extension(const u_char* packet);
-/* 0111 */ void control_wrapper(const u_char* packet);
-/* 1000 */ void control_bar(const u_char* packet);
-/* 1001 */ void control_ba(const u_char* packet);
-/* 1010 */ void control_ps_poll(const u_char* packet);
-/* 1011 */ void control_rts(const u_char* packet);
-/* 1100 */ void control_cts(const u_char* packet);
-/* 1101 */ void control_ack(const u_char* packet);
-/* 1110 */ void control_cf_end(const u_char* packet);
-/* 1111 */ void control_cf_end_cf_ack(const u_char* packet);
+/* 0100 */ void control_beamforming(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0101 */ void control_vht_he_ndp(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0110 */ void control_frame_extension(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0111 */ void control_wrapper(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1000 */ void control_bar(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1001 */ void control_ba(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1010 */ void control_ps_poll(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1011 */ void control_rts(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1100 */ void control_cts(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1101 */ void control_ack(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1110 */ void control_cf_end(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1111 */ void control_cf_end_cf_ack(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
 
-/* 0000 */ void data_data(const u_char* packet);
-/* 0001 */ void data_data_cf_ack(const u_char* packet);
-/* 0010 */ void data_data_cf_poll(const u_char* packet);
-/* 0011 */ void data_data_cf_ack_cf_poll(const u_char* packet);
-/* 0100 */ void data_null(const u_char* packet);
-/* 0101 */ void data_cf_ack(const u_char* packet);
-/* 0110 */ void data_cf_poll(const u_char* packet);
-/* 0111 */ void data_cf_ack_cf_poll(const u_char* packet);
-/* 1000 */ void data_qos_data(const u_char* packet);
-/* 1001 */ void data_qos_data_cf_ack(const u_char* packet);
-/* 1010 */ void data_qos_data_cf_poll(const u_char* packet);
-/* 1011 */ void data_qos_data_cf_ack_cf_oll(const u_char* packet);
-/* 1100 */ void data_qos_null(const u_char* packet);
+/* 0000 */ void data_data(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0001 */ void data_data_cf_ack(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0010 */ void data_data_cf_poll(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0011 */ void data_data_cf_ack_cf_poll(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0100 */ void data_null(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0101 */ void data_cf_ack(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0110 */ void data_cf_poll(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 0111 */ void data_cf_ack_cf_poll(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1000 */ void data_qos_data(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1001 */ void data_qos_data_cf_ack(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1010 */ void data_qos_data_cf_poll(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1011 */ void data_qos_data_cf_ack_cf_oll(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1100 */ void data_qos_null(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
 /* 1101 */ // reserved
-/* 1110 */ void data_qos_cf_poll(const u_char* packet);
-/* 1111 */ void data_qos_cf_ack_cf_poll(const u_char* packet);
+/* 1110 */ void data_qos_cf_poll(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
+/* 1111 */ void data_qos_cf_ack_cf_poll(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
 
-/* 0000 */ void extension_dmg_beacon(const u_char* packet);
+/* 0000 */ void extension_dmg_beacon(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
 /* 0001 - 1111 */ // reserved
 
 static print_packet management[16] = {
@@ -161,6 +164,19 @@ typedef struct wifi_header {
     u_int8_t antennaSignal1;
     u_int8_t antenna1;
 } wifi_header;
+
+typedef struct wifi_management_frame {
+    u_int8_t frameControl;
+    u_int8_t flags;
+    u_int16_t duration;
+//    u_int8_t ra[6]; DA == RA
+    u_int8_t da[6];
+    // u_int8_t ta[6]; SA == TA
+    u_int8_t sa[6];
+    u_int8_t bssid[6];
+    u_int16_t sequence;
+} wifi_management_frame;
+
 
 typedef struct wifi_packet {
     u_int16_t frameControl;
