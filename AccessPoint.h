@@ -1,12 +1,12 @@
 #ifndef ACCESSPOINT_H
 #define ACCESSPOINT_H
 
-#define MAC_LENGTH 6
-
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
 #include <vector>
+
+#include <pcap.h>
 
 #include <glib.h>
 #include <gmodule.h>
@@ -17,16 +17,18 @@
 #include <libnm/nm-utils.h>
 
 #include "helpers.h"
+#include "packets.h"
 
 namespace App {
     class AccessPoint {
     public:
-        explicit AccessPoint(NMAccessPoint* accessPoint);
+        explicit AccessPoint(const char* interface, NMAccessPoint* accessPoint);
         ~AccessPoint();
 
         static std::vector<App::AccessPoint*> ScanForAccessPoints(const char* interface);
         static void PrintTable(const std::vector<App::AccessPoint*>& accessPoints, App::AccessPoint* selected);
         static bool Compare(const App::AccessPoint* a, const App::AccessPoint* b);
+        static void ProcessPacket(u_char* args, const struct pcap_pkthdr* header, const u_char* packet);
 
         void listenForTraffic();
 
@@ -46,6 +48,8 @@ namespace App {
     protected:
 
     private:
+        const char* interface;
+
         const GByteArray* ssid;
         const char* bssid;
 

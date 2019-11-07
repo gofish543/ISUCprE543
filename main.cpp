@@ -13,7 +13,6 @@ static void stopProgram(int signum) {
 
 int main(int argc, char* argv[]) {
     int userInput = 0;
-    int character = 0;
     int selection = 0;
     struct sigaction signalAction{};
     std::vector<App::AccessPoint*> accessPoints = AccessPoint::ScanForAccessPoints("wlo1");

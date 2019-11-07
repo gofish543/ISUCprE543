@@ -1,6 +1,8 @@
 #include "AccessPoint.h"
 
-AccessPoint::AccessPoint(NMAccessPoint* accessPoint) {
+AccessPoint::AccessPoint(const char* interface, NMAccessPoint* accessPoint) {
+    this->interface = interface;
+
     /* Get AP properties */
     this->ssid = (const GByteArray*) nm_access_point_get_ssid(accessPoint);
     this->bssid = nm_access_point_get_bssid(accessPoint);
@@ -85,7 +87,10 @@ std::vector<App::AccessPoint*> AccessPoint::ScanForAccessPoints(const char* inte
     std::vector<App::AccessPoint*> accessPoints;
 
     /* Initialize GType system */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
     g_type_init();
+#pragma clang diagnostic pop
 
     /* Get NMClient object */
     nm_client = nm_client_new(nullptr, nullptr);
@@ -114,7 +119,7 @@ std::vector<App::AccessPoint*> AccessPoint::ScanForAccessPoints(const char* inte
         if (NM_IS_ACCESS_POINT(g_ptr_array_index(aps, index))) {
             accessPoint = NM_ACCESS_POINT(g_ptr_array_index(aps, index));
 
-            accessPoints.push_back(new App::AccessPoint(accessPoint));
+            accessPoints.push_back(new App::AccessPoint(interface, accessPoint));
         }
     }
 
@@ -146,13 +151,128 @@ void AccessPoint::listenForTraffic() {
     switch (userInput) {
         case 'y':
         case 'Y':
-            fprintf(stdout, "Scanning...\n");
-            break;
+
+            NMClient* nm_client;
+            NMDevice* device;
+
+            char errorBuffer[PCAP_ERRBUF_SIZE];
+            bpf_u_int32 mask;
+            bpf_u_int32 network;
+            pcap_t* handle;
+            struct bpf_program filter{};
+            std::string filterStr =
+                    "wlan src " + this->bssidString + " or " +
+                    "wlan dst " + this->bssidString + " or " +
+                    "wlan addr1 " + this->bssidString + " or " +
+                    "wlan addr2 " + this->bssidString + "or " +
+                    "wlan host " + this->bssidString;
+
+            /* Get NMClient object */
+            nm_client = nm_client_new(nullptr, nullptr);
+            if (!nm_client) {
+                std::cerr << "Could not create NMClient" << std::endl;
+                exit(1);
+            }
+
+            device = nm_client_get_device_by_iface(nm_client, this->interface);
+            if (!device || NM_IS_DEVICE_WIFI (device) == FALSE) {
+                std::cerr << "The wifi device " << interface << " could not be found" << std::endl;
+                exit(1);
+            }
+
+            nm_device_set_autoconnect(device, false);
+            nm_device_set_managed(device, false);
+
+            popen(("iwconfig " + std::string(this->interface) + " channel " + std::to_string(this->channel)).c_str(), "r");
+
+            handle = pcap_create(this->interface, errorBuffer);
+            pcap_set_snaplen(handle, 2346);
+            pcap_set_promisc(handle, false);
+            pcap_set_rfmon(handle, true);
+            pcap_set_timeout(handle, 1000);
+
+            if (handle == nullptr) {
+                fprintf(stderr, "Failed to open device %s\n", this->interface);
+                goto close;
+            }
+
+            if (pcap_lookupnet(this->interface, &network, &mask, errorBuffer) == -1) {
+                fprintf(stderr, "Failed to lookup device\n");
+                goto close;
+            }
+
+            pcap_activate(handle);
+
+            if (pcap_compile(handle, &filter, filterStr.c_str(), 0, network) == -1) {
+                fprintf(stderr, "Error compiling pcap filter -- %s --\n", filterStr.c_str());
+                goto close;
+            }
+
+//            if (pcap_setfilter(handle, &filter) == -1) {
+//                fprintf(stderr, "Error setting pcap filter\n");
+//                goto close;
+//            }
+
+            pcap_loop(handle, 1000, AccessPoint::ProcessPacket, nullptr);
+
+        close:
+            pcap_close(handle);
+
+            nm_device_set_autoconnect(device, true);
+            nm_device_set_managed(device, true);
+
+            g_object_unref(nm_client);
+
+            exit(0);
     }
 }
 
 bool AccessPoint::Compare(const App::AccessPoint* a, const App::AccessPoint* b) {
     return a->strength > b->strength;
+}
+
+void AccessPoint::ProcessPacket(u_char* args, const struct pcap_pkthdr* header, const u_char* packet) {
+    if (packet[0] == 0xFF && packet[1] == 0xFF && packet[2] == 0xFF && packet[3] == 0xFF) {
+        fprintf(stderr, "Skipping malformed packet\n");
+        return;
+    }
+
+    u_char version = (packet[2] + packet)[0] & 0b00000011;
+    u_char type = ((packet[2] + packet)[0] & 0b00001100) >> 2;
+    u_char subtype = ((packet[2] + packet)[0] & 0b11110000) >> 4;
+
+    if (version < 0 || version > 0) {
+        fprintf(stderr, "Invalid version %u\n", version);
+        return;
+    }
+
+    if (type < 0 || type > 4) {
+        fprintf(stderr, "Invalid type %u\n", type);
+        return;
+    }
+
+    if (subtype < 0 || subtype > 15) {
+        fprintf(stderr, "Invalid subtype %u\n", subtype);
+        return;
+    }
+
+    switch (type) {
+        case 0:
+            management[subtype](packet);
+            break;
+        case 1:
+            control[subtype](packet);
+            break;
+        case 2:
+            data[subtype](packet);
+            break;
+        case 3:
+            extension[subtype](packet);
+            break;
+        default:
+            fprintf(stderr, "Unknown packet type %u\n", type);
+            break;
+    }
 }
 
 //double AccessPoint::CalculateDistance() {}() {
