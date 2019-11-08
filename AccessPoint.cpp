@@ -257,7 +257,7 @@ void AccessPoint::ProcessPacket(u_char* args, const struct pcap_pkthdr* header, 
 
     switch (type) {
         case 0:
-//            management_frames[subtype](packet, packet[2] + packet, packet, header->len);
+            management_frames[subtype](packet, packet[2] + packet, packet, header->len);
             break;
         case 1:
             control_frames[subtype](packet, packet[2] + packet, packet, header->len);
