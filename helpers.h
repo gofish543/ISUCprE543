@@ -14,7 +14,7 @@ int getChar();
 std::string ap_wpa_rsn_flags_to_string(NM80211ApSecurityFlags flags);
 std::string ap_flags_to_string(NM80211ApFlags flags, NM80211ApSecurityFlags wpaFlags, NM80211ApSecurityFlags rsnFlags);
 
-void print_byte_as_bits(char val);
+void print_byte_as_bits(unsigned char val);
 void print_bits(char* ty, char* val, unsigned char* bytes, size_t num_bytes);
 
 #endif

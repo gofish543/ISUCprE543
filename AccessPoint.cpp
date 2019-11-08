@@ -198,7 +198,6 @@ void AccessPoint::listenForTraffic() {
 
             if (pcap_lookupnet(this->interface, &network, &mask, errorBuffer) == -1) {
                 fprintf(stderr, "Failed to lookup device\n");
-                goto close;
             }
 
             pcap_activate(handle);
@@ -258,16 +257,16 @@ void AccessPoint::ProcessPacket(u_char* args, const struct pcap_pkthdr* header, 
 
     switch (type) {
         case 0:
-            management[subtype](packet, packet[2] + packet, packet, header->len);
+//            management_frames[subtype](packet, packet[2] + packet, packet, header->len);
             break;
         case 1:
-            control[subtype](packet, packet[2] + packet, packet, header->len);
+            control_frames[subtype](packet, packet[2] + packet, packet, header->len);
             break;
         case 2:
-            data[subtype](packet, packet[2] + packet, packet, header->len);
+            data_frames[subtype](packet, packet[2] + packet, packet, header->len);
             break;
         case 3:
-            extension[subtype](packet, packet[2] + packet, packet, header->len);
+            extension_frames[subtype](packet, packet[2] + packet, packet, header->len);
             break;
         default:
             fprintf(stderr, "Unknown packet type %u\n", type);

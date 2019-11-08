@@ -3,9 +3,12 @@
 
 #include <cstdio>
 #include <cctype>
+#include <unistd.h>
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <pcap/bpf.h>
+
+#include "helpers.h"
 
 typedef void (* print_packet)(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
 
@@ -65,7 +68,7 @@ void reserved(const u_char* header, const u_char* frame, const u_char* packet, b
 /* 0000 */ void extension_dmg_beacon(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize);
 /* 0001 - 1111 */ // reserved
 
-static print_packet management[16] = {
+static print_packet management_frames[16] = {
         management_association_request, // 0
         management_association_response, // 1
         management_reassociation_request, // 2
@@ -84,7 +87,7 @@ static print_packet management[16] = {
         reserved, // 15
 };
 
-static print_packet control[16] = {
+static print_packet control_frames[16] = {
         reserved, // 0
         reserved, // 1
         control_trigger, // 2
@@ -103,7 +106,7 @@ static print_packet control[16] = {
         control_cf_end_cf_ack, // 15
 };
 
-static print_packet data[16] = {
+static print_packet data_frames[16] = {
         data_data, // 0
         data_data_cf_ack, // 1
         data_data_cf_poll, // 2
@@ -122,7 +125,7 @@ static print_packet data[16] = {
         data_qos_cf_ack_cf_poll,// 15
 };
 
-static print_packet extension[16] = {
+static print_packet extension_frames[16] = {
         extension_dmg_beacon, // 0
         reserved, // 1
         reserved, // 2
@@ -141,30 +144,6 @@ static print_packet extension[16] = {
         reserved, // 15
 };
 
-typedef struct wifi_header {
-    u_int8_t revision;
-    u_int8_t pad;
-    u_int16_t length;
-    u_int32_t presentFlags[3];
-    u_int8_t flags;
-    u_int8_t rate;
-    u_int16_t frequency;
-    u_int16_t channelFlags;
-    u_int16_t rxFlags;
-    u_int16_t mscInfo;
-    u_int8_t mscIndex;
-    u_int32_t mpduRefNumber;
-    u_int16_t mpduFlags;
-    u_int64_t timestamp;
-    u_int16_t timestampAccuracy;
-    u_int8_t timestampUnit;
-    u_int8_t timestampCounter;
-    u_int8_t antennaSignal0;
-    u_int8_t antenna0;
-    u_int8_t antennaSignal1;
-    u_int8_t antenna1;
-} wifi_header;
-
 typedef struct wifi_management_frame {
     u_int8_t frameControl;
     u_int8_t flags;
@@ -177,15 +156,47 @@ typedef struct wifi_management_frame {
     u_int16_t sequence;
 } wifi_management_frame;
 
+typedef struct wifi_control_block_ack_request {
+    u_int8_t frameControl;
+    u_int8_t flags;
+    u_int16_t duration;
+    u_int8_t ra[6];
+    u_int8_t ta[6];
+    u_int16_t blockAckRequest[2];
+} wifi_control_block_ack_request;
 
-typedef struct wifi_packet {
-    u_int16_t frameControl;
-    u_int16_t durationID;
-    u_int8_t addr1[6];
-    u_int8_t addr2[6];
-    u_int8_t addr3[6];
-    u_int16_t sequenceControl;
-    u_int8_t addr4[6];
-} wifi_packet;
+typedef struct wifi_control_block_ack {
+    u_int8_t frameControl;
+    u_int8_t flags;
+    u_int16_t duration;
+    u_int8_t ra[6];
+    u_int8_t ta[6];
+    u_int16_t blockAckResponse[2];
+    u_int64_t blockAckBitMap;
+} wifi_control_block_ack;
+
+typedef struct wifi_control_rts {
+    u_int8_t frameControl;
+    u_int8_t flags;
+    u_int16_t duration;
+    u_int8_t ra[6];
+    u_int8_t ta[6];
+} wifi_control_rts;
+
+typedef struct wifi_control_cts {
+    u_int8_t frameControl;
+    u_int8_t flags;
+    u_int16_t duration;
+    u_int8_t ra[6];
+} wifi_control_cts;
+
+typedef struct wifi_control_ack {
+    u_int8_t frameControl;
+    u_int8_t flags;
+    u_int16_t duration;
+    u_int8_t ra[6];
+} wifi_control_ack;
+
+void print_management_frame(wifi_management_frame* frame, char* subtype, const u_char* data, u_int32_t size);
 
 #endif
