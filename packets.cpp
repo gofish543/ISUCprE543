@@ -251,6 +251,86 @@ void control_cf_end_cf_ack(const u_char* header, const u_char* frame, const u_ch
 }
 
 void data_data(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize) {
+    auto* wifi_frame = (wifi_data_data*) frame;
+    char subtype[] = "Data";
+
+    fprintf(stdout, "---------- %s ----------\n", subtype);
+    fprintf(stdout, "Version: %u\n", wifi_frame->frameControl >> 6);
+    fprintf(stdout, "Type: %s\n", "Data Frame");
+    fprintf(stdout, "SubType: %s\n", subtype);
+    fprintf(stdout, "Flags: %02X\n", wifi_frame->flags);
+    u_int8_t ds = wifi_frame->flags >> 6;
+    fprintf(stdout, "To Ds/From Ds: %02b\n", ds);
+    fprintf(stdout, "Duration: %hu\n", wifi_frame->duration);
+    fprintf(stdout, "Receiver Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+            wifi_frame->addr1[0], wifi_frame->addr1[1], wifi_frame->addr1[2],
+            wifi_frame->addr1[3], wif_frame->addr1[4], wifi_frame->addr1[5]
+    );
+    fprintf(stdout, "Transmitter Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+            wifi_frame->addr2[0], wifi_frame->addr2[1], wifi_frame->addr2[2],
+            wifi_frame->addr2[3], wifi_frame->addr2[4], wifi_frame->addr2[5]
+    );
+    if(ds == 0){
+        fprintf(stdout, "Destination Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                wifi_frame->addr1[0], wifi_frame->addr1[1], wifi_frame->addr1[2],
+                wifi_frame->addr1[3], wif_frame->addr1[4], wifi_frame->addr1[5]
+        );
+
+        fprintf(stdout, "Source Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                wifi_frame->addr2[0], wifi_frame->addr2[1], wifi_frame->addr2[2],
+                wifi_frame->addr2[3], wifi_frame->addr2[4], wifi_frame->addr2[5]
+        );
+
+        fprintf(stdout, "BSSID: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                wifi_frame->addr3[0], wifi_frame->addr3[1], wifi_frame->addr3[2],
+                wifi_frame->addr3[3], wif_frame->addr3[4], wifi_frame->addr3[5]
+        );
+    }
+    else if(ds == 1){
+        fprintf(stdout, "Destination Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                wifi_frame->addr1[0], wifi_frame->addr1[1], wifi_frame->addr1[2],
+                wifi_frame->addr1[3], wif_frame->addr1[4], wifi_frame->addr1[5]
+        );
+
+        fprintf(stdout, "Source Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                wifi_frame->addr3[0], wifi_frame->addr3[1], wifi_frame->addr3[2],
+                wifi_frame->addr3[3], wif_frame->addr3[4], wifi_frame->addr3[5]
+        );
+
+        fprintf(stdout, "BSSID: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                wifi_frame->addr2[0], wifi_frame->addr2[1], wifi_frame->addr2[2],
+                wifi_frame->addr2[3], wifi_frame->addr2[4], wifi_frame->addr2[5]
+        );
+    }
+    else if(ds == 2){
+        fprintf(stdout, "Destination Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                wifi_frame->addr3[0], wifi_frame->addr3[1], wifi_frame->addr3[2],
+                wifi_frame->addr3[3], wif_frame->addr3[4], wifi_frame->addr3[5]
+        );
+
+        fprintf(stdout, "Source Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                wifi_frame->addr2[0], wifi_frame->addr2[1], wifi_frame->addr2[2],
+                wifi_frame->addr2[3], wifi_frame->addr2[4], wifi_frame->addr2[5]
+        );
+
+        fprintf(stdout, "BSSID: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                wifi_frame->addr1[0], wifi_frame->addr1[1], wifi_frame->addr1[2],
+                wifi_frame->addr1[3], wif_frame->addr1[4], wifi_frame->addr1[5]
+        );
+    }
+    else if(ds == 3){
+        fprintf(stdout, "Destination Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                wifi_frame->addr3[0], wifi_frame->addr3[1], wifi_frame->addr3[2],
+                wifi_frame->addr3[3], wif_frame->addr3[4], wifi_frame->addr3[5]
+        );
+
+        fprintf(stdout, "Source Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+                wifi_frame->addr4[0], wifi_frame->addr4[1], wifi_frame->addr4[2],
+                wifi_frame->addr4[3], wifi_frame->addr4[4], wifi_frame->addr4[5]
+        );
+    }
+
+    fprintf(stdout, "\n");
 
 }
 
