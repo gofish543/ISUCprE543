@@ -200,16 +200,18 @@ typedef struct wifi_control_ack {
 typedef struct wifi_data_data {
     u_int8_t frameControl;
     u_int8_t flags;
-    u_int8_t duration;
-    u_int8_t addr1[6];
-    u_int8_t addr2[6];
-    u_int8_t addr3[6];
-    u_int16_t seq;
-    u_int8_t addr4[6];
+    u_int16_t duration;
+    u_int8_t ra[6];
+    u_int8_t ta[6];
+    u_int8_t da[6];
+    u_int8_t sa[6];
+    u_int8_t bssid[6];
+    u_int8_t sta[6];
+    u_int16_t sequenceNumber;
+    u_int64_t ccmp;
 } wifi_data_data;
 
-
-
 void print_management_frame(wifi_management_frame* frame, char* subtype, const u_char* data, u_int32_t size);
+void print_contents(const u_char* data, u_int32_t size);
 
 #endif

@@ -252,86 +252,49 @@ void control_cf_end_cf_ack(const u_char* header, const u_char* frame, const u_ch
 
 void data_data(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize) {
     auto* wifi_frame = (wifi_data_data*) frame;
+    u_int32_t dataSize = packetSize;
+    const u_char* start = nullptr;
+    bool fromDs = wifi_frame->flags & 0b00000010;
+    bool toDs = wifi_frame->flags & 0b00000001;
     char subtype[] = "Data";
+
+    dataSize -= header[2]; // Subtract radio header size
+    dataSize -= sizeof(wifi_data_data); // Subtract size of wifi management frame struct
+    dataSize -= 4; // Subtract checksum at end
+
+    start = packet + header[2] + sizeof(wifi_data_data);
 
     fprintf(stdout, "---------- %s ----------\n", subtype);
     fprintf(stdout, "Version: %u\n", wifi_frame->frameControl >> 6);
     fprintf(stdout, "Type: %s\n", "Data Frame");
     fprintf(stdout, "SubType: %s\n", subtype);
     fprintf(stdout, "Flags: %02X\n", wifi_frame->flags);
-    u_int8_t ds = wifi_frame->flags >> 6;
-    fprintf(stdout, "To Ds/From Ds: %02b\n", ds);
+    fprintf(stdout, "From Ds: %s\n", fromDs ? "Yes" : "No");
+    fprintf(stdout, "To Ds: %s\n", toDs ? "Yes" : "No");
     fprintf(stdout, "Duration: %hu\n", wifi_frame->duration);
+
     fprintf(stdout, "Receiver Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-            wifi_frame->addr1[0], wifi_frame->addr1[1], wifi_frame->addr1[2],
-            wifi_frame->addr1[3], wif_frame->addr1[4], wifi_frame->addr1[5]
+            wifi_frame->ra[0], wifi_frame->ra[1], wifi_frame->ra[2],
+            wifi_frame->ra[3], wifi_frame->ra[4], wifi_frame->ra[5]
     );
     fprintf(stdout, "Transmitter Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-            wifi_frame->addr2[0], wifi_frame->addr2[1], wifi_frame->addr2[2],
-            wifi_frame->addr2[3], wifi_frame->addr2[4], wifi_frame->addr2[5]
+            wifi_frame->ta[0], wifi_frame->ta[1], wifi_frame->ta[2],
+            wifi_frame->ta[3], wifi_frame->ta[4], wifi_frame->ta[5]
     );
-    if(ds == 0){
-        fprintf(stdout, "Destination Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                wifi_frame->addr1[0], wifi_frame->addr1[1], wifi_frame->addr1[2],
-                wifi_frame->addr1[3], wif_frame->addr1[4], wifi_frame->addr1[5]
-        );
+    fprintf(stdout, "%s Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+            fromDs ? "Source" : "Destination",
+            wifi_frame->da[0], wifi_frame->da[1], wifi_frame->da[2],
+            wifi_frame->da[3], wifi_frame->da[4], wifi_frame->da[5]
+    );
+    fprintf(stdout, "%s Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
+            fromDs ? "Destination" : "Source",
+            wifi_frame->sa[0], wifi_frame->sa[1], wifi_frame->sa[2],
+            wifi_frame->sa[3], wifi_frame->sa[4], wifi_frame->sa[5]
+    );
 
-        fprintf(stdout, "Source Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                wifi_frame->addr2[0], wifi_frame->addr2[1], wifi_frame->addr2[2],
-                wifi_frame->addr2[3], wifi_frame->addr2[4], wifi_frame->addr2[5]
-        );
-
-        fprintf(stdout, "BSSID: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                wifi_frame->addr3[0], wifi_frame->addr3[1], wifi_frame->addr3[2],
-                wifi_frame->addr3[3], wif_frame->addr3[4], wifi_frame->addr3[5]
-        );
-    }
-    else if(ds == 1){
-        fprintf(stdout, "Destination Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                wifi_frame->addr1[0], wifi_frame->addr1[1], wifi_frame->addr1[2],
-                wifi_frame->addr1[3], wif_frame->addr1[4], wifi_frame->addr1[5]
-        );
-
-        fprintf(stdout, "Source Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                wifi_frame->addr3[0], wifi_frame->addr3[1], wifi_frame->addr3[2],
-                wifi_frame->addr3[3], wif_frame->addr3[4], wifi_frame->addr3[5]
-        );
-
-        fprintf(stdout, "BSSID: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                wifi_frame->addr2[0], wifi_frame->addr2[1], wifi_frame->addr2[2],
-                wifi_frame->addr2[3], wifi_frame->addr2[4], wifi_frame->addr2[5]
-        );
-    }
-    else if(ds == 2){
-        fprintf(stdout, "Destination Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                wifi_frame->addr3[0], wifi_frame->addr3[1], wifi_frame->addr3[2],
-                wifi_frame->addr3[3], wif_frame->addr3[4], wifi_frame->addr3[5]
-        );
-
-        fprintf(stdout, "Source Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                wifi_frame->addr2[0], wifi_frame->addr2[1], wifi_frame->addr2[2],
-                wifi_frame->addr2[3], wifi_frame->addr2[4], wifi_frame->addr2[5]
-        );
-
-        fprintf(stdout, "BSSID: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                wifi_frame->addr1[0], wifi_frame->addr1[1], wifi_frame->addr1[2],
-                wifi_frame->addr1[3], wif_frame->addr1[4], wifi_frame->addr1[5]
-        );
-    }
-    else if(ds == 3){
-        fprintf(stdout, "Destination Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                wifi_frame->addr3[0], wifi_frame->addr3[1], wifi_frame->addr3[2],
-                wifi_frame->addr3[3], wif_frame->addr3[4], wifi_frame->addr3[5]
-        );
-
-        fprintf(stdout, "Source Address: %02X:%02X:%02X:%02X:%02X:%02X\n",
-                wifi_frame->addr4[0], wifi_frame->addr4[1], wifi_frame->addr4[2],
-                wifi_frame->addr4[3], wifi_frame->addr4[4], wifi_frame->addr4[5]
-        );
-    }
-
-    fprintf(stdout, "\n");
-
+    print_contents(start, dataSize);
+    
+    fprintf(stdout, "\n\n");
 }
 
 void data_data_cf_ack(const u_char* header, const u_char* frame, const u_char* packet, bpf_u_int32 packetSize) {
@@ -424,6 +387,11 @@ void print_management_frame(wifi_management_frame* frame, char* subtype, const u
     fprintf(stdout, "Fragment Number: %u\n", ntohs(frame->sequence) & 0x000F);
     fprintf(stdout, "Sequence Number: %u\n", (ntohs(frame->sequence) & 0xFFF0) >> 4);
 
+    print_contents(data, size);
+    fprintf(stdout, "\n\n");
+}
+
+void print_contents(const u_char* data, u_int32_t size) {
     fprintf(stdout, "Data:");
     for (u_int32_t index = 0; index < size; index++) {
         if (index % 8 == 0) {
@@ -439,6 +407,5 @@ void print_management_frame(wifi_management_frame* frame, char* subtype, const u
             fprintf(stdout, " ");
         }
     }
-    fprintf(stdout, "\n\n");
 }
 
