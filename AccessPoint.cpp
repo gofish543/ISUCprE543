@@ -105,6 +105,8 @@ std::vector<App::AccessPoint*> AccessPoint::ScanForAccessPoints(const char* inte
         exit(1);
     }
 
+    nm_device_set_autoconnect(device, true);
+    nm_device_set_managed(device, true);
     nm_device_wifi_request_scan(NM_DEVICE_WIFI (device), nullptr, nullptr);
 
     // Wait for the devices to populate, with a max weight of 30 seconds
@@ -158,7 +160,6 @@ void AccessPoint::listenForTraffic() {
             char errorBuffer[PCAP_ERRBUF_SIZE];
             bpf_u_int32 mask;
             bpf_u_int32 network;
-            pcap_t* handle;
             struct bpf_program filter{};
             std::string filterStr =
                     "wlan src " + this->bssidString + " or " +
@@ -166,6 +167,7 @@ void AccessPoint::listenForTraffic() {
                     "wlan addr1 " + this->bssidString + " or " +
                     "wlan addr2 " + this->bssidString + "or " +
                     "wlan host " + this->bssidString;
+            pcapHandle = nullptr;
 
             /* Get NMClient object */
             nm_client = nm_client_new(nullptr, nullptr);
@@ -185,13 +187,13 @@ void AccessPoint::listenForTraffic() {
 
             popen(("iwconfig " + std::string(this->interface) + " channel " + std::to_string(this->channel)).c_str(), "r");
 
-            handle = pcap_create(this->interface, errorBuffer);
-            pcap_set_snaplen(handle, 2346);
-            pcap_set_promisc(handle, false);
-            pcap_set_rfmon(handle, true);
-            pcap_set_timeout(handle, 1000);
+            pcapHandle = pcap_create(this->interface, errorBuffer);
+            pcap_set_snaplen(pcapHandle, 2346);
+            pcap_set_promisc(pcapHandle, false);
+            pcap_set_rfmon(pcapHandle, true);
+            pcap_set_timeout(pcapHandle, 1000);
 
-            if (handle == nullptr) {
+            if (pcapHandle == nullptr) {
                 fprintf(stderr, "Failed to open device %s\n", this->interface);
                 goto close;
             }
@@ -200,29 +202,28 @@ void AccessPoint::listenForTraffic() {
                 fprintf(stderr, "Failed to lookup device\n");
             }
 
-            pcap_activate(handle);
+            pcap_activate(pcapHandle);
 
-            if (pcap_compile(handle, &filter, filterStr.c_str(), 0, network) == -1) {
+            if (pcap_compile(pcapHandle, &filter, filterStr.c_str(), 0, network) == -1) {
                 fprintf(stderr, "Error compiling pcap filter -- %s --\n", filterStr.c_str());
                 goto close;
             }
 
-//            if (pcap_setfilter(handle, &filter) == -1) {
-//                fprintf(stderr, "Error setting pcap filter\n");
-//                goto close;
-//            }
-
-            pcap_loop(handle, 10000, AccessPoint::ProcessPacket, nullptr);
+            if (pcap_setfilter(pcapHandle, &filter) == -1) {
+                fprintf(stderr, "Error setting pcap filter\n");
+                goto close;
+            }
+            pcap_loop(pcapHandle, -1, AccessPoint::ProcessPacket, nullptr);
 
         close:
-            pcap_close(handle);
+            pcap_close(pcapHandle);
 
             nm_device_set_autoconnect(device, true);
             nm_device_set_managed(device, true);
 
             g_object_unref(nm_client);
 
-            exit(0);
+            pcapHandle = nullptr;
     }
 }
 

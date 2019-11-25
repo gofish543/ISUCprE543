@@ -1,5 +1,8 @@
 #include "helpers.h"
 
+pcap_t* pcapHandle = nullptr;
+bool stop = false;
+
 int getChar() {
     int userInput = 0;
     int character = 0;

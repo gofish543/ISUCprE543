@@ -293,7 +293,7 @@ void data_data(const u_char* header, const u_char* frame, const u_char* packet, 
     );
 
     print_contents(start, dataSize);
-    
+
     fprintf(stdout, "\n\n");
 }
 

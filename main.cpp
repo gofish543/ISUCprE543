@@ -6,18 +6,13 @@
 #include "helpers.h"
 #include "AccessPoint.h"
 
-static bool stop = false;
-static void stopProgram(int signum) {
-    stop = true;
-}
-
 int main(int argc, char* argv[]) {
     int userInput = 0;
     int selection = 0;
     struct sigaction signalAction{};
     std::vector<App::AccessPoint*> accessPoints = AccessPoint::ScanForAccessPoints("wlo1");
     std::sort(accessPoints.begin(), accessPoints.end(), AccessPoint::Compare);
-    signalAction.sa_handler = stopProgram;
+    signalAction.sa_handler = terminate;
     signalAction.sa_flags = 0;
 
     sigaction(SIGINT, &signalAction, nullptr);
