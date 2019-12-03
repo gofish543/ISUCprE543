@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.13)
 project(ISUCprE543)
 
 find_package(PkgConfig REQUIRED)
